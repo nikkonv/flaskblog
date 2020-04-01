@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  {% for p in posts %}
+
+    <p> {{ p.author }} </p>
+    <p> {{ p.content }} </p>
+  {% endfor %}
+
+{% endblock content %}
