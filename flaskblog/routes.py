@@ -4,17 +4,18 @@ import os
 from PIL import Image
 from flask import url_for, flash, redirect, request
 from flask import render_template as render
-from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from flaskblog.models import User, Post
 from flaskblog import app, db, bcrypt
 from flask_login import login_user, current_user, logout_user, login_required
-
-post={}
+import datetime
 
 @app.route('/')
 @app.route('/home')
 def home():
-    return render('home.html', posts=post)
+    posts = Post.query.all()
+    now = datetime.datetime.now()
+    return render('home.html', posts=posts, now=now)
 
 @app.route('/about')
 def about():
@@ -85,3 +86,15 @@ def account():
         form.email.data = current_user.email
     image_file = url_for('static', filename='profile_pics/'+current_user.image_file)
     return render('account.html', title='Account', image_file=image_file, form=form)
+
+@app.route('/post/new', methods=['GET', 'POST'])
+@login_required
+def new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title=form.title.data, content=form.content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your form has been created!','success')
+        return redirect(url_for('home'))
+    return render('create_post.html', title='New Post', form=form)
